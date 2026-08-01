@@ -1,0 +1,6 @@
+.env
+credentials.json
+__pycache__/
+chroma_db/
+*.pyc
+.DS_Store
