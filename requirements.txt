@@ -12,3 +12,5 @@ google-auth-httplib2
 google-auth-oauthlib
 langchain-google-community
 PyPDF2
+pinecone-client
+langchain-pinecone

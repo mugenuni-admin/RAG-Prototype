@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_chroma import Chroma
+from langchain_pinecone import PineconeVectorStore
 
 # Load environment variables (API Key)
 load_dotenv()
@@ -62,18 +62,22 @@ def main():
     splits = text_splitter.split_documents(docs)
     print(f"Split documents into {len(splits)} chunks.")
     
-    # 3. Create Embeddings and Store in Vector Database (Chroma)
-    print("Generating embeddings and saving to local database...")
+    # 3. Create Embeddings and Store in Vector Database (Pinecone)
+    if "PINECONE_API_KEY" not in os.environ:
+        print("Error: PINECONE_API_KEY not found in environment variables.")
+        return
+
+    print("Generating embeddings and uploading to Pinecone...")
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-2")
+    index_name = "mugenuni-data-room"
     
-    # This creates the local database and saves it to CHROMA_DB_DIR
-    vectorstore = Chroma.from_documents(
+    vectorstore = PineconeVectorStore.from_documents(
         documents=splits, 
         embedding=embeddings, 
-        persist_directory=CHROMA_DB_DIR
+        index_name=index_name
     )
     
-    print(f"Success! Data Room built at {CHROMA_DB_DIR}")
+    print("Success! Data Room uploaded to Pinecone index: " + index_name)
 
 if __name__ == "__main__":
     main()

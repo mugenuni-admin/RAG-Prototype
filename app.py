@@ -1,7 +1,7 @@
 import streamlit as st
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_chroma import Chroma
+from langchain_pinecone import PineconeVectorStore
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 import os
@@ -19,11 +19,13 @@ st.write("Ask questions about your documents. Only the answers are shown.")
 @st.cache_resource
 def setup_rag_chain():
     # 1. Load Database
-    if not os.path.exists(CHROMA_DB_DIR):
+    if "PINECONE_API_KEY" not in os.environ:
+        st.error("PINECONE_API_KEY not found in environment variables.")
         return None
         
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-2")
-    vectorstore = Chroma(persist_directory=CHROMA_DB_DIR, embedding_function=embeddings)
+    index_name = "mugenuni-data-room"
+    vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
     retriever = vectorstore.as_retriever(search_kwargs={"k": 30}) # Get top 30 most relevant chunks
     
     # 2. Setup LLM
@@ -87,7 +89,7 @@ with st.sidebar:
                     try:
                         import os
                         from langchain_google_community import GoogleDriveLoader
-                        from langchain_chroma import Chroma
+                        from langchain_pinecone import PineconeVectorStore
                         from langchain_google_genai import GoogleGenerativeAIEmbeddings
                         from langchain_text_splitters import RecursiveCharacterTextSplitter
                         from google.oauth2.credentials import Credentials
@@ -125,7 +127,8 @@ with st.sidebar:
                             embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-2")
                             
                             import time
-                            vectorstore = Chroma(embedding_function=embeddings, persist_directory="./chroma_db")
+                            index_name = "mugenuni-data-room"
+                            vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
                             batch_size = 20
                             progress_text = st.empty()
                             
@@ -159,7 +162,7 @@ with st.sidebar:
 chain = setup_rag_chain()
 
 if chain is None:
-    st.warning("⚠️ No Data Room found. Please add files to the `data` folder and run `python ingest.py` first.")
+    st.warning("⚠️ No Data Room found. Please make sure PINECONE_API_KEY is set in your .env file or Streamlit Secrets.")
 else:
     # Initialize chat history
     if "messages" not in st.session_state:
