@@ -1,4 +1,5 @@
 import os
+import sys
 import glob
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
@@ -22,7 +23,11 @@ def load_documents():
         return documents
 
     # Get all files in the data directory recursively
-    files = glob.glob(os.path.join(DATA_DIR, "**", "*"), recursive=True)
+    if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
+        files = [sys.argv[1]]
+        print(f"Only processing specific file: {sys.argv[1]}")
+    else:
+        files = glob.glob(os.path.join(DATA_DIR, "**", "*"), recursive=True)
     
     for file_path in files:
         print(f"Loading {file_path}...")
