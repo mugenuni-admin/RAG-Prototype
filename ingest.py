@@ -22,12 +22,20 @@ def load_documents():
         os.makedirs(DATA_DIR)
         return documents
 
-    # Get all files in the data directory recursively
-    if len(sys.argv) > 1 and os.path.isfile(sys.argv[1]):
-        files = [sys.argv[1]]
-        print(f"Only processing specific file: {sys.argv[1]}")
+    if len(sys.argv) > 1:
+        target_path = sys.argv[1]
+        if os.path.isfile(target_path):
+            files = [target_path]
+            print(f"Only processing specific file: {target_path}")
+        elif os.path.isdir(target_path):
+            files = glob.glob(os.path.join(target_path, "**", "*"), recursive=True)
+            print(f"Only processing specific directory: {target_path}")
+        else:
+            print(f"Error: Path '{target_path}' not found.")
+            return []
     else:
         files = glob.glob(os.path.join(DATA_DIR, "**", "*"), recursive=True)
+        print("Processing all files in data directory...")
     
     for file_path in files:
         print(f"Loading {file_path}...")

@@ -1,0 +1,21 @@
+cookie:
+  expiry_days: 30
+  key: random_signature_key
+  name: random_cookie_name
+credentials:
+  usernames:
+    admin:
+      email: admin@example.com
+      failed_login_attempts: 0
+      logged_in: false
+      name: Admin
+      password: $2b$12$01.TqjwtL17PlFo8MQ.y4eXruTSv1kTaIY8hlAG9u1FDRZuKGHRau
+    investor1:
+      email: jim.pope@gmail.com
+      failed_login_attempts: 0
+      logged_in: false
+      name: Jim Pope
+      password: $2b$12$rO5yu8QDx/Ht/jwNSyDwSOEoBeHXElQpW/bPieK4tCX4/6QnmvF2O
+pre-authorized:
+  emails:
+  - investor@example.com

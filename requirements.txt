@@ -14,3 +14,6 @@ langchain-google-community
 PyPDF2
 pinecone-client
 langchain-pinecone
+
+streamlit-authenticator
+fpdf2

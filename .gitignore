@@ -4,3 +4,6 @@ __pycache__/
 chroma_db/
 *.pyc
 .DS_Store
+*.db
+data/
+token.json
