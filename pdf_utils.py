@@ -47,3 +47,35 @@ def generate_watermarked_pdf(question, answer, user_email):
     
     # Return as bytes for Streamlit download
     return bytes(pdf.output())
+
+def generate_full_history_pdf(messages, user_email):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    watermark_text = f"CONFIDENTIAL - {user_email} - {timestamp}"
+    
+    pdf = PDF(watermark_text=watermark_text)
+    pdf.add_page()
+    
+    pdf.set_font("helvetica", "B", 16)
+    pdf.set_text_color(0, 0, 0)
+    pdf.cell(0, 10, "Data Room Complete Q&A History", new_x="LMARGIN", new_y="NEXT", align="C")
+    pdf.ln(10)
+    
+    # Process messages in pairs (User then Assistant)
+    # We'll just loop through and label them based on role.
+    for msg in messages:
+        if msg["role"] == "user":
+            pdf.set_font("helvetica", "B", 12)
+            pdf.cell(0, 10, "Question:", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("helvetica", "", 12)
+            clean_text = str(msg["content"]).encode('latin-1', 'replace').decode('latin-1')
+            pdf.multi_cell(0, 8, clean_text)
+            pdf.ln(2)
+        elif msg["role"] == "assistant":
+            pdf.set_font("helvetica", "B", 12)
+            pdf.cell(0, 10, "Answer:", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("helvetica", "", 12)
+            clean_text = str(msg["content"]).encode('latin-1', 'replace').decode('latin-1')
+            pdf.multi_cell(0, 8, clean_text)
+            pdf.ln(10) # extra space after each Q&A pair
+
+    return bytes(pdf.output())

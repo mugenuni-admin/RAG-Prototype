@@ -9,7 +9,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 import os
 import db
-from pdf_utils import generate_watermarked_pdf
+from pdf_utils import generate_watermarked_pdf, generate_full_history_pdf
 
 # Load environment variables
 load_dotenv()
@@ -192,6 +192,21 @@ elif st.session_state["authentication_status"]:
         # Initialize chat history
         if "messages" not in st.session_state:
             st.session_state.messages = []
+            
+        with st.sidebar:
+            if len(st.session_state.messages) > 0:
+                st.divider()
+                st.subheader("📄 Export")
+                full_pdf = generate_full_history_pdf(st.session_state.messages, st.session_state["username"])
+                st.download_button(
+                    label="📥 Download Full Q&A History",
+                    data=full_pdf,
+                    file_name="Data_Room_Full_History.pdf",
+                    mime="application/pdf",
+                    key="dl_full_history",
+                    on_click=db.log_action,
+                    args=(st.session_state["username"], "DOWNLOAD_FULL_HISTORY")
+                )
 
         # Display chat history
         for idx, message in enumerate(st.session_state.messages):
