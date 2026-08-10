@@ -6,6 +6,7 @@ langchain-chroma
 chromadb
 pypdf
 python-docx
+docx2txt
 python-dotenv
 google-api-python-client
 google-auth-httplib2
