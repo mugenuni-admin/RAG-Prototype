@@ -23,7 +23,7 @@ def get_image_description(file_path):
     with open(file_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
         
-    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+    llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash")
     message = HumanMessage(
         content=[
             {"type": "text", "text": "Describe this image in detail. Make sure to note its contents, colors, objects, and any text present. Be very descriptive as this will be used for a search engine."},

@@ -101,11 +101,13 @@ elif st.session_state["authentication_status"]:
                             f_out.write(f.getbuffer())
                     
                     import subprocess
-                    subprocess.run(["python", "ingest.py"], cwd=os.path.dirname(__file__))
-                    st.cache_resource.clear()
-                    
-                    st.success("Successfully added to the data room!")
-                    st.rerun()
+                    result = subprocess.run(["python", "ingest.py"], cwd=os.path.dirname(__file__), capture_output=True, text=True)
+                    if result.returncode != 0:
+                        st.error(f"Error processing files: {result.stderr}")
+                    else:
+                        st.cache_resource.clear()
+                        st.success("Successfully added to the data room!")
+                        st.rerun()
 
         st.divider()
         st.subheader("Import from Google Drive")
