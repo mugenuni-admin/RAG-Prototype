@@ -218,9 +218,13 @@ elif st.session_state["authentication_status"]:
                     st.markdown("**Related Images:**")
                     for img_path in message["images"]:
                         try:
-                            st.image(img_path)
-                        except Exception:
-                            pass
+                            import os
+                            if os.path.exists(img_path):
+                                st.image(img_path)
+                            else:
+                                st.warning(f"⚠️ Image file missing from server: `{img_path}`. (This happens on cloud deployments if the app restarts. Please re-upload the image to restore it.)")
+                        except Exception as e:
+                            st.error(f"Error loading image: {e}")
                             
                 if message["role"] == "assistant" and "pdf_bytes" in message:
                     st.download_button(
@@ -252,9 +256,13 @@ elif st.session_state["authentication_status"]:
                         st.markdown("**Related Images:**")
                         for img_path in image_sources:
                             try:
-                                st.image(img_path)
-                            except Exception:
-                                pass
+                                import os
+                                if os.path.exists(img_path):
+                                    st.image(img_path)
+                                else:
+                                    st.warning(f"⚠️ Image file missing from server: `{img_path}`. (This happens on cloud deployments if the app restarts. Please re-upload the image to restore it.)")
+                            except Exception as e:
+                                st.error(f"Error loading image: {e}")
                     
                     db.log_query(st.session_state["username"], prompt, answer)
                     
@@ -264,7 +272,11 @@ elif st.session_state["authentication_status"]:
                             st.caption(f"**Source {i+1}: {source}**")
                             if doc.metadata.get("type") == "image":
                                 try:
-                                    st.image(source)
+                                    import os
+                                    if os.path.exists(source):
+                                        st.image(source)
+                                    else:
+                                        st.write(f"*(Image `{source}` no longer exists on server)*")
                                 except Exception:
                                     pass
                             st.write(doc.page_content)
