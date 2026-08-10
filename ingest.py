@@ -78,6 +78,7 @@ def load_documents():
                 print(f"Skipping unsupported file type: {file_path}")
         except Exception as e:
             print(f"Error loading {file_path}: {e}")
+            raise e
             
     return documents
 
