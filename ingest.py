@@ -27,11 +27,16 @@ def get_image_description(file_path):
     message = HumanMessage(
         content=[
             {"type": "text", "text": "Describe this image in detail. Make sure to note its contents, colors, objects, and any text present. Be very descriptive as this will be used for a search engine."},
-            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{encoded_string}"}}
+            {"type": "image_url", "image_url": f"data:image/jpeg;base64,{encoded_string}"}
         ]
     )
     response = llm.invoke([message])
-    return response.content
+    
+    content = response.content
+    if isinstance(content, list):
+        text_parts = [part.get("text", "") for part in content if isinstance(part, dict) and "text" in part]
+        return " ".join(text_parts) if text_parts else str(content)
+    return str(content)
 
 def load_documents():
     documents = []
