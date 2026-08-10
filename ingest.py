@@ -4,14 +4,34 @@ import glob
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, Docx2txtLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_pinecone import PineconeVectorStore
+from langchain_core.documents import Document
+from langchain_core.messages import HumanMessage
+import base64
 
 # Load environment variables (API Key)
 load_dotenv()
 
-DATA_DIR = "./data"
+import sys
+
+# Allow overriding the data directory via command-line argument
+DATA_DIR = sys.argv[1] if len(sys.argv) > 1 else "./data"
 CHROMA_DB_DIR = "./chroma_db"
+
+def get_image_description(file_path):
+    with open(file_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+        
+    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+    message = HumanMessage(
+        content=[
+            {"type": "text", "text": "Describe this image in detail. Make sure to note its contents, colors, objects, and any text present. Be very descriptive as this will be used for a search engine."},
+            {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{encoded_string}"}}
+        ]
+    )
+    response = llm.invoke([message])
+    return response.content
 
 def load_documents():
     documents = []
@@ -40,15 +60,20 @@ def load_documents():
     for file_path in files:
         print(f"Loading {file_path}...")
         try:
-            if file_path.endswith(".pdf"):
+            if file_path.lower().endswith(".pdf"):
                 loader = PyPDFLoader(file_path)
                 documents.extend(loader.load())
-            elif file_path.endswith(".txt"):
+            elif file_path.lower().endswith(".txt"):
                 loader = TextLoader(file_path, encoding="utf-8")
                 documents.extend(loader.load())
-            elif file_path.endswith(".docx"):
+            elif file_path.lower().endswith(".docx"):
                 loader = Docx2txtLoader(file_path)
                 documents.extend(loader.load())
+            elif file_path.lower().endswith((".jpg", ".jpeg", ".png")):
+                print(f"Generating image description for {file_path}...")
+                description = get_image_description(file_path)
+                doc = Document(page_content=description, metadata={"source": file_path, "type": "image"})
+                documents.append(doc)
             else:
                 print(f"Skipping unsupported file type: {file_path}")
         except Exception as e:

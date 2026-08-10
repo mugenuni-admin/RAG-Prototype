@@ -89,7 +89,7 @@ elif st.session_state["authentication_status"]:
     # --- UI and Logic ---
     with st.sidebar:
         st.header("📁 Add More Sources")
-        uploaded_files = st.file_uploader("Upload PDF, TXT, or DOCX", accept_multiple_files=True, type=['pdf', 'txt', 'docx'])
+        uploaded_files = st.file_uploader("Upload Document or Image", accept_multiple_files=True, type=['pdf', 'txt', 'docx', 'jpg', 'jpeg', 'png'])
         if uploaded_files:
             if st.button("Process & Add to Data Room"):
                 with st.spinner("Saving and Processing..."):
@@ -236,12 +236,27 @@ elif st.session_state["authentication_status"]:
                     answer = chain["llm_chain"].invoke({"input": prompt, "context": context})
                     st.markdown(answer)
                     
+                    image_sources = [doc.metadata.get("source") for doc in docs if doc.metadata.get("type") == "image"]
+                    if image_sources:
+                        image_sources = list(dict.fromkeys(image_sources))
+                        st.markdown("**Related Images:**")
+                        for img_path in image_sources:
+                            try:
+                                st.image(img_path)
+                            except Exception:
+                                pass
+                    
                     db.log_query(st.session_state["username"], prompt, answer)
                     
                     with st.expander("View Source Snippets"):
                         for i, doc in enumerate(docs):
                             source = doc.metadata.get("source", "Unknown")
                             st.caption(f"**Source {i+1}: {source}**")
+                            if doc.metadata.get("type") == "image":
+                                try:
+                                    st.image(source)
+                                except Exception:
+                                    pass
                             st.write(doc.page_content)
                             
                     pdf_bytes = generate_watermarked_pdf(prompt, answer, st.session_state["username"])
