@@ -72,6 +72,7 @@ elif st.session_state["authentication_status"]:
         system_prompt = (
             "You are a helpful assistant for question-answering tasks. "
             "Use the following pieces of retrieved context to answer the question. "
+            "If the user asks to see an image, do not say you cannot show it. The system will display it automatically. Just say 'Here is the image:' and describe it based on the context. "
             "If you don't know the answer, say that you don't know. "
             "Use three sentences maximum and keep the answer concise."
             "\n\n"
@@ -212,6 +213,15 @@ elif st.session_state["authentication_status"]:
         for idx, message in enumerate(st.session_state.messages):
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
+                
+                if "images" in message and message["images"]:
+                    st.markdown("**Related Images:**")
+                    for img_path in message["images"]:
+                        try:
+                            st.image(img_path)
+                        except Exception:
+                            pass
+                            
                 if message["role"] == "assistant" and "pdf_bytes" in message:
                     st.download_button(
                         label="📄 Download Answer as PDF",
@@ -275,5 +285,6 @@ elif st.session_state["authentication_status"]:
             st.session_state.messages.append({
                 "role": "assistant", 
                 "content": answer,
-                "pdf_bytes": pdf_bytes
+                "pdf_bytes": pdf_bytes,
+                "images": image_sources
             })
