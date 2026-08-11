@@ -77,7 +77,7 @@ def load_documents():
             elif file_path.lower().endswith((".jpg", ".jpeg", ".png")):
                 print(f"Generating image description for {file_path}...")
                 description = get_image_description(file_path)
-                doc = Document(page_content=description, metadata={"source": file_path, "type": "image"})
+                doc = Document(page_content=f"[IMAGE CAPTION]: {description}", metadata={"source": file_path, "type": "image"})
                 documents.append(doc)
             else:
                 print(f"Skipping unsupported file type: {file_path}")

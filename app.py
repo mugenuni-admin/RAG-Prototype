@@ -72,7 +72,7 @@ elif st.session_state["authentication_status"]:
         system_prompt = (
             "You are a helpful assistant for question-answering tasks. "
             "Use the following pieces of retrieved context to answer the question. "
-            "If the user asks to see an image, do not say you cannot show it. The system will display it automatically. Just say 'Here is the image:' and describe it based on the context. "
+            "If the user asks to see an image, look for context blocks that start with [IMAGE CAPTION]. If you find one, say 'Here is the image:' and describe it based on the caption. If you DO NOT find one, say 'I cannot find an image of that in the data room.' DO NOT invent or hallucinate descriptions. "
             "If you don't know the answer, say that you don't know. "
             "Use three sentences maximum and keep the answer concise."
             "\n\n"
