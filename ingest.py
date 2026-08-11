@@ -19,6 +19,7 @@ import sys
 DATA_DIR = sys.argv[1] if len(sys.argv) > 1 else "./data"
 CHROMA_DB_DIR = "./chroma_db"
 
+import time
 def get_image_description(file_path):
     with open(file_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
@@ -30,13 +31,23 @@ def get_image_description(file_path):
             {"type": "image_url", "image_url": f"data:image/jpeg;base64,{encoded_string}"}
         ]
     )
-    response = llm.invoke([message])
     
-    content = response.content
-    if isinstance(content, list):
-        text_parts = [part.get("text", "") for part in content if isinstance(part, dict) and "text" in part]
-        return " ".join(text_parts) if text_parts else str(content)
-    return str(content)
+    # Add manual retry logic for 503 errors
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            response = llm.invoke([message])
+            content = response.content
+            if isinstance(content, list):
+                text_parts = [part.get("text", "") for part in content if isinstance(part, dict) and "text" in part]
+                return " ".join(text_parts) if text_parts else str(content)
+            return str(content)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"Gemini API error (attempt {attempt+1}): {e}. Retrying in 5 seconds...")
+                time.sleep(5)
+            else:
+                raise e
 
 def load_documents():
     documents = []
@@ -84,6 +95,7 @@ def load_documents():
         except Exception as e:
             print(f"Error loading {file_path}: {e}")
             raise e
+            raise e
             
     return documents
 
@@ -115,13 +127,23 @@ def main():
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-2")
     index_name = "mugenuni-data-room"
     
-    vectorstore = PineconeVectorStore.from_documents(
-        documents=splits, 
-        embedding=embeddings, 
-        index_name=index_name
-    )
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            vectorstore = PineconeVectorStore.from_documents(
+                documents=splits, 
+                embedding=embeddings, 
+                index_name=index_name
+            )
+            break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"Pinecone/Embedding error (attempt {attempt+1}): {e}. Retrying in 5 seconds...")
+                time.sleep(5)
+            else:
+                raise e
     
-    print("Success! Data Room uploaded to Pinecone index: " + index_name)
+    print(f"Success! Data Room uploaded to Pinecone index: {index_name}")
 
 if __name__ == "__main__":
     main()
