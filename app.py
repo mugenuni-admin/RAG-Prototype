@@ -65,7 +65,7 @@ elif st.session_state["authentication_status"]:
         embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-2")
         index_name = "mugenuni-data-room"
         vectorstore = PineconeVectorStore(index_name=index_name, embedding=embeddings)
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 30}) 
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 100}) 
         
         llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash", temperature=0.2)
         
@@ -102,7 +102,8 @@ elif st.session_state["authentication_status"]:
                     
                     import subprocess
                     import sys
-                    result = subprocess.run([sys.executable, "ingest.py"], cwd=os.path.dirname(__file__), capture_output=True, text=True)
+                    uploaded_path = os.path.join("data", f.name)
+                    result = subprocess.run([sys.executable, "ingest.py", uploaded_path], cwd=os.path.dirname(__file__), capture_output=True, text=True)
                     if result.returncode != 0:
                         st.error(f"Error processing files: {result.stderr}")
                     else:
