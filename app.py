@@ -250,7 +250,8 @@ elif st.session_state["authentication_status"]:
                     docs = chain["retriever"].invoke(prompt)
                     try:
                         # Force inject image documents so they are NEVER missed
-                        img_docs = chain["vectorstore"].similarity_search(prompt, k=5, filter={"type": "image"})
+                        # Increased to 30 to bypass any infographic duplicates from earlier
+                        img_docs = chain["vectorstore"].similarity_search(prompt, k=30, filter={"type": "image"})
                         docs = img_docs + docs
                     except Exception:
                         pass
