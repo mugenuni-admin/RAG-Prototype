@@ -109,7 +109,6 @@ elif st.session_state["authentication_status"]:
                     else:
                         st.cache_resource.clear()
                         st.success("Successfully added to the data room!")
-                        st.rerun()
 
         st.divider()
         st.subheader("Import from Google Drive")
