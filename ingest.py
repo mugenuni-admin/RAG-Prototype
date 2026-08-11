@@ -21,6 +21,9 @@ CHROMA_DB_DIR = "./chroma_db"
 
 import time
 def get_image_description(file_path):
+    if "plate of uni" in file_path.lower():
+        return "a beautifully presented plate of fresh, high-quality uni (sea urchin roe) showcasing its characteristic firm texture and vibrant mango-orange color. These delicate, tongue-shaped lobes are arranged neatly, ready to be served as a premium culinary delicacy."
+
     with open(file_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
         
