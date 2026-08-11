@@ -85,7 +85,7 @@ elif st.session_state["authentication_status"]:
         
         llm_chain = prompt | llm | StrOutputParser()
         
-        return {"retriever": retriever, "llm_chain": llm_chain}
+        return {"retriever": retriever, "llm_chain": llm_chain, "vectorstore": vectorstore}
 
     # --- UI and Logic ---
     with st.sidebar:
@@ -249,6 +249,13 @@ elif st.session_state["authentication_status"]:
             with st.chat_message("assistant"):
                 with st.spinner("Searching the Data Room..."):
                     docs = chain["retriever"].invoke(prompt)
+                    try:
+                        # Force inject image documents so they are NEVER missed
+                        img_docs = chain["vectorstore"].similarity_search(prompt, k=5, filter={"type": "image"})
+                        docs = img_docs + docs
+                    except Exception:
+                        pass
+                    
                     context = "\n\n".join(doc.page_content for doc in docs)
                     
                     answer = chain["llm_chain"].invoke({"input": prompt, "context": context})
