@@ -249,10 +249,11 @@ elif st.session_state["authentication_status"]:
                 with st.spinner("Searching the Data Room..."):
                     docs = chain["retriever"].invoke(prompt)
                     try:
-                        # Force inject image documents so they are NEVER missed
-                        # Increased to 30 to bypass any infographic duplicates from earlier
-                        img_docs = chain["vectorstore"].similarity_search(prompt, k=30, filter={"type": "image"})
-                        docs = img_docs + docs
+                        # Only force inject images if the user is asking about visual content
+                        image_keywords = ["show", "image", "picture", "photo", "look", "see", "plate", "diagram", "infographic"]
+                        if any(keyword in prompt.lower() for keyword in image_keywords):
+                            img_docs = chain["vectorstore"].similarity_search(prompt, k=30, filter={"type": "image"})
+                            docs = img_docs + docs
                     except Exception:
                         pass
                     
